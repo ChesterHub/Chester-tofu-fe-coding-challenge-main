@@ -26,7 +26,17 @@ const test1 = {
 
 const test2 = {components: {}}
 
+export type SelectedComponent = {
+  id: string
+  html_tag: string
+  selected_element: string
+  preceding_element: string
+  succeeding_element: string
+  text: string
+}
+
 const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
+  const [selectedComponents, setSelectedComponents] = useState<SelectedComponent[]>([])
   const [leftPanelSize, setLeftPanelSize] = useState(25);
   const handleResize = (sizes: number[]) => {
     setLeftPanelSize(sizes[0]);
@@ -42,8 +52,16 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
     // testMutate()
   },[])
 
-  console.log("content", content)
-  console.log("campaign", campaign)
+  const addSelectedComponent = (newComponent: SelectedComponent): void => {
+    setSelectedComponents(prevComponents => [...prevComponents, newComponent])
+  }
+
+  const removeSelectedComponent = (id: string): void => {
+    setSelectedComponents(prevComponents => prevComponents.filter(component => component.id !== id))
+  }
+
+  // console.log("content", content)
+  // console.log("campaign", campaign)'
   return (
     <div className="flex flex-col h-[calc(100vh-50px)] bg-white">
       <PanelGroup direction="horizontal" onLayout={handleResize}>
@@ -60,7 +78,11 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
         <PanelResizeHandle className="w-[2px] bg-gray-200 hover:bg-primary transition-colors focus:bg-primary" />
         <Panel>
           <div className="w-full h-full relative overflow-y-scroll">
-            <FactoryContent />
+            <FactoryContent  
+              selectedComponents={selectedComponents} 
+              addComponent={addSelectedComponent} 
+              removeComponent={removeSelectedComponent} 
+            />
           </div>
         </Panel>
       </PanelGroup>

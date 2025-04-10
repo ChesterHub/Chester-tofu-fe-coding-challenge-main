@@ -3,8 +3,15 @@ import Accordion from "../../../components/core/accordion";
 import {
   TrashIcon
 } from '@heroicons/react/20/solid';
+import TargetListBox from "components/core/TargetListBox";
 
-const Settings = ({ selectedComponents, removeComponent }) => {
+const Settings = ({ 
+  selectedComponents, 
+  removeComponent, 
+  targets,
+  selectedTarget,
+  changeSelectedTarget,
+}) => {
   const windowWidth = useMemo(() => window?.innerWidth, [window?.innerWidth]);
 
   const accordionLabel = (number, text, stage) => {
@@ -89,6 +96,11 @@ const Settings = ({ selectedComponents, removeComponent }) => {
                 other targets.
               </p>
             </div>
+            <TargetListBox 
+              selectedTarget={selectedTarget} 
+              allTargets={targets} 
+              onChange={changeSelectedTarget}
+            />
           </Accordion>
         </div>
       </div>

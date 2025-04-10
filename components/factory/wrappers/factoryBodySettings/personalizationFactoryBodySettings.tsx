@@ -51,6 +51,7 @@ export type SelectedComponent = {
 const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
   const [selectedComponents, setSelectedComponents] = useState<SelectedComponent[]>([])
   const [leftPanelSize, setLeftPanelSize] = useState(25);
+  const [selectedTarget, setSelectedTarget] = useState(campaign.targets[0]["Targets for FE coding challenge"][0])
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const handleResize = (sizes: number[]) => {
     setLeftPanelSize(sizes[0]);
@@ -135,6 +136,10 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
     setSelectedComponents(prevComponents => prevComponents.filter(component => component.id !== id))
   }
 
+  const changeSelectedTarget = (target: string): void => {
+    setSelectedTarget(target)
+  }
+
   // console.log("content", content)
   // console.log("campaign", campaign)
   return (
@@ -145,6 +150,9 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
             <PersonalizationFactoryControlSettings
               selectedComponents={selectedComponents}
               removeComponent={removeSelectedComponent}
+              targets={campaign.targets[0]["Targets for FE coding challenge"]}
+              selectedTarget={selectedTarget}
+              changeSelectedTarget={changeSelectedTarget}
               currentPaneWidth={leftPanelSize}
               fixedButtonsPaddingRight={calculateFixedButtonsPaddingRight(
                 leftPanelSize

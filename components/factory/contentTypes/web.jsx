@@ -11,10 +11,7 @@ const Web = ({ selectedComponents, addComponent, removeComponent }) => {
   const [htmlContent, setHtmlContent] = useState(null);
   const [fetchingHtml, setFetchingHtml] = useState(false);
 
-  useEffect(() => {
-    selectedComponentsRef.current = selectedComponents
-  }, [selectedComponents]);
-
+  
   const fetchAndSetHtml = async (url) => {
     try {
       const response = await fetch(url);
@@ -26,66 +23,83 @@ const Web = ({ selectedComponents, addComponent, removeComponent }) => {
       setFetchingHtml(false);
     }
   };
-
+  
   const handleElementClick = (event) => {
     const clickedElement = event.target
-
+    
     // Check if the clicked element has the 'tofu-element' class
     if (clickedElement.classList.contains("tofu-element")) {
       const tofuId = clickedElement.getAttribute("data-tofu-id")
       //check if component already in list
       if (selectedComponentsRef.current.some(c => c.id === tofuId)) {
-        clickedElement.style.border = null
         removeComponent(tofuId)
       } else {
-          const tagName = clickedElement.tagName
-          const textContent = clickedElement.innerText
-          clickedElement.style.border = "2px solid orange"
-    
-          const newComponent = {
-            id: tofuId,
-            html_tag: tagName,
-            selected_element: clickedElement.outerHTML,
-            text: textContent,
-          }
-          addComponent(newComponent)
+        const tagName = clickedElement.tagName
+        const textContent = clickedElement.innerText
+        
+        const newComponent = {
+          id: tofuId,
+          html_tag: tagName,
+          selected_element: clickedElement.outerHTML,
+          text: textContent,
+        }
+        addComponent(newComponent)
       }
-
+      
     }
   }
-
+  
   const initDisplayContent = async () => {
     setFetchingHtml(true);
     await fetchAndSetHtml("/landing-page.html");
-
+    
     const iframe = iframeRef.current
-
+    
     iframe.onload = () => {
       iframeDoc.current = iframe.contentDocument || iframe.contentWindow.document
-
+      
       if (iframeDoc.current) {
         const style = iframeDoc.current.createElement("style")
         style.innerHTML = `
-          .tofu-element:hover {
-            border: 2px dashed orange;
-            content: "";
+        .tofu-element:hover {
+          border: 2px dashed orange;
+          content: "";
           }
-        `;
-        iframeDoc.current.head.appendChild(style);
-
-        // Add click event listener for tofu elements
-        iframeDoc.current.addEventListener("click", handleElementClick)
+          `;
+          iframeDoc.current.head.appendChild(style);
+          // Add click event listener for tofu elements
+          iframeDoc.current.addEventListener("click", handleElementClick)
+          updateSelectedElementStyles()
+        }
       }
     }
-  };
-  
-  useEffect(() => {
-    initDisplayContent()
+    
+    useEffect(() => {
+      initDisplayContent()
+      return () => {
+        if (iframeDoc.current) iframeDoc.current.removeEventListener("click", handleElementClick)
+        }
+    }, [])
 
-    return () => {
-      if (iframeDoc.current) iframeDoc.current.removeEventListener("click", handleElementClick)
+    const updateSelectedElementStyles = () => {
+      if (!iframeDoc.current) return
+    
+      // Remove borders from all .tofu-element elements
+      const allElements = iframeDoc.current.querySelectorAll('.tofu-element')
+      allElements.forEach((el) => {
+        el.style.border = ''
+      })
+      // Add borders only to those in selectedComponents
+      selectedComponentsRef.current.forEach((component) => {
+        const curr = iframeDoc.current.querySelector(`[data-tofu-id="${component.id}"]`)
+        if (curr) curr.style.border = "2px solid orange"
+      })
     }
-  }, []);
+
+    useEffect(() => { // this useEffect for handling when selectedComponents update
+      selectedComponentsRef.current = selectedComponents // for handleClick data
+      updateSelectedElementStyles()
+    }, [selectedComponents])
 
   return (
     <>

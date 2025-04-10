@@ -26,6 +26,19 @@ const test1 = {
 
 const test2 = {components: {}}
 
+type ComponentMap = {
+  [id: string]: {
+    meta: {
+      html_tag: string;
+      selected_element: string;
+      preceding_element: string;
+      succeeding_element: string;
+      [key: string]: any;
+    };
+    text: string;
+  };
+};
+
 export type SelectedComponent = {
   id: string
   html_tag: string
@@ -38,7 +51,7 @@ export type SelectedComponent = {
 const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
   const [selectedComponents, setSelectedComponents] = useState<SelectedComponent[]>([])
   const [leftPanelSize, setLeftPanelSize] = useState(25);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const handleResize = (sizes: number[]) => {
     setLeftPanelSize(sizes[0]);
   };
@@ -70,18 +83,34 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
   }
 
   useEffect(() => {
+    const components = content.components as ComponentMap
+
+    if (components) {
+      const initialSelected: SelectedComponent[] = Object.entries(components).map(([id, component]) => ({
+        id,
+        html_tag: component.meta.html_tag,
+        selected_element: component.meta.selected_element,
+        preceding_element: component.meta.preceding_element,
+        succeeding_element: component.meta.succeeding_element,
+        text: component.text,
+      }));
+  
+      setSelectedComponents(initialSelected);
+    }
+  }, []);
+
+  useEffect(() => {
     // Clear previous timeout if state changes before timer ends
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
     }
 
-    timeoutRef.current = setTimeout(() => {
+    debounceRef.current = setTimeout(() => {
       const payload = buildComponentPayload(selectedComponents);
 
       const updateContent = async () => {
         try {
           const content = await updateContentGroup(payload)
-          console.log("Update successful:", content)
         } catch (error) {
           console.error("Failed to update content group:", error)
         }
@@ -89,11 +118,11 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
       
       updateContent()
 
-    }, 2000)
+    }, 1000)
 
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current)
       }
     };
   }, [selectedComponents])
@@ -106,7 +135,7 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
     setSelectedComponents(prevComponents => prevComponents.filter(component => component.id !== id))
   }
 
-  console.log("content", content)
+  // console.log("content", content)
   // console.log("campaign", campaign)
   return (
     <div className="flex flex-col h-[calc(100vh-50px)] bg-white">
@@ -114,6 +143,8 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
         <Panel defaultSize={25} minSize={20} maxSize={80}>
           <div className="z-10 w-full h-full mb-40 overflow-x-hidden overflow-y-scroll flex flex-col items-start">
             <PersonalizationFactoryControlSettings
+              selectedComponents={selectedComponents}
+              removeComponent={removeSelectedComponent}
               currentPaneWidth={leftPanelSize}
               fixedButtonsPaddingRight={calculateFixedButtonsPaddingRight(
                 leftPanelSize
@@ -125,7 +156,7 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
         <Panel>
           <div className="w-full h-full relative overflow-y-scroll">
             <FactoryContent  
-              selectedComponents={selectedComponents} 
+              selectedComponents={selectedComponents}
               addComponent={addSelectedComponent} 
               removeComponent={removeSelectedComponent} 
             />

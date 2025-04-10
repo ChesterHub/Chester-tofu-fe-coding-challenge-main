@@ -1,7 +1,10 @@
 import { useMemo } from "react";
 import Accordion from "../../../components/core/accordion";
+import {
+  TrashIcon
+} from '@heroicons/react/20/solid';
 
-const Settings = () => {
+const Settings = ({ selectedComponents, removeComponent }) => {
   const windowWidth = useMemo(() => window?.innerWidth, [window?.innerWidth]);
 
   const accordionLabel = (number, text, stage) => {
@@ -27,6 +30,22 @@ const Settings = () => {
     );
   };
 
+  const componentContent = selectedComponents.length 
+  ? selectedComponents.map(component => {
+    return <div key={component.id} className="flex items-center justify-between text-sm font-normal text-slate-700 border p-3 rounded-lg shadow-md mb-1">
+    <p className="flex-1">{component.text}</p>
+    <button
+      onClick={() => removeComponent(component.id)}
+    >
+      <TrashIcon className="h-6 w-6" />
+    </button>
+  </div>
+  })
+  : <p className="text-sm font-normal text-slate-700">
+      On the canvas, select components that you want Tofu to
+      personalize. We’ll generate multiple options for each component.
+    </p>
+
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow">
@@ -44,10 +63,7 @@ const Settings = () => {
             initOpen={true}
           >
             <div className="flex flex-col gap-y-1 mt-6">
-              <p className="text-sm font-normal text-slate-700">
-                On the canvas, select components that you want Tofu to
-                personalize. We’ll generate multiple options for each component.
-              </p>
+              {componentContent}
             </div>
           </Accordion>
         </div>

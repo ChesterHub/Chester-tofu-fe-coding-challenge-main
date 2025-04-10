@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import FactoryContent from "../factoryContent";
 import { PersonalizationFactoryControlSettings } from "../factoryControlSettings/personalizationFactoryControlSettings";
@@ -38,19 +38,65 @@ export type SelectedComponent = {
 const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
   const [selectedComponents, setSelectedComponents] = useState<SelectedComponent[]>([])
   const [leftPanelSize, setLeftPanelSize] = useState(25);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const handleResize = (sizes: number[]) => {
     setLeftPanelSize(sizes[0]);
   };
   const { updateContentGroup, isLoading, isSuccess, error } = useUpdateContentGroup()
 
-  useEffect(() => {
-    const testMutate = async () => {
-      console.log("update content group")
-      const content = await updateContentGroup({id: 304736, payload: test2})
-      console.log("done", content)
+  const buildComponentPayload = (components: SelectedComponent[]) => {
+    const componentEntries = components.reduce((acc, component) => {
+      acc[component.id] = {
+        meta: {
+          type: "text",
+          html_tag: component.html_tag,
+          time_added: Date.now(),
+          html_tag_index: null,
+          selected_element: component.selected_element,
+          preceding_element: component.preceding_element,
+          succeeding_element: component.succeeding_element,
+        },
+        text: component.text,
+      }
+      return acc
+    }, {})
+  
+    return {
+      id: content.contentGroup,
+      payload: {
+        components: componentEntries,
+      },
     }
-    // testMutate()
-  },[])
+  }
+
+  useEffect(() => {
+    // Clear previous timeout if state changes before timer ends
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      const payload = buildComponentPayload(selectedComponents);
+
+      const updateContent = async () => {
+        try {
+          const content = await updateContentGroup(payload)
+          console.log("Update successful:", content)
+        } catch (error) {
+          console.error("Failed to update content group:", error)
+        }
+      }
+      
+      updateContent()
+
+    }, 2000)
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    };
+  }, [selectedComponents])
 
   const addSelectedComponent = (newComponent: SelectedComponent): void => {
     setSelectedComponents(prevComponents => [...prevComponents, newComponent])
@@ -60,8 +106,8 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
     setSelectedComponents(prevComponents => prevComponents.filter(component => component.id !== id))
   }
 
-  // console.log("content", content)
-  // console.log("campaign", campaign)'
+  console.log("content", content)
+  // console.log("campaign", campaign)
   return (
     <div className="flex flex-col h-[calc(100vh-50px)] bg-white">
       <PanelGroup direction="horizontal" onLayout={handleResize}>

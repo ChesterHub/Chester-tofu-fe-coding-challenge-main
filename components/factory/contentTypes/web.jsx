@@ -39,7 +39,7 @@ const Web = ({ selectedComponents, addComponent, removeComponent }) => {
         removeComponent(tofuId)
       } else {
           const tagName = clickedElement.tagName
-          const textContent = clickedElement.textContent
+          const textContent = clickedElement.innerText
           clickedElement.style.border = "2px solid orange"
     
           const newComponent = {

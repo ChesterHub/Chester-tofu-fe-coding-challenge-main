@@ -1,21 +1,158 @@
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import FactoryContent from "../factoryContent";
 import { PersonalizationFactoryControlSettings } from "../factoryControlSettings/personalizationFactoryControlSettings";
 import { calculateFixedButtonsPaddingRight } from "utils/factoryHelpers";
+import { useUpdateContentGroup } from "hooks/api/contentGroup";
+
+const test1 = {
+  components: {
+    "7JJPz8_F9wo1sgZd" : {
+      meta: {
+        type: 'text',
+        "html_tag": "<div>",
+        "time_added": 1730664936853,
+        "html_tag_index": null,
+        selected_element:
+          '<div class="subtext tofu-element tofu-editable-element" data-tofu-id="7JJPz8_F9wo1sgZd">Scale your content efforts, personalize your GTM campaigns,and increase conversion</div>',
+        preceding_element: '<a>See a Demo</a>',
+        succeeding_element:
+          '<div>Scale your content efforts, personalize your GTM campaigns, and increase conversion</div>',
+      },
+      text: 'Scale your content efforts, personalize your GTM campaigns, and increase conversion',
+    }
+  },
+}
+
+const test2 = {components: {}}
+
+type ComponentMap = {
+  [id: string]: {
+    meta: {
+      html_tag: string;
+      selected_element: string;
+      preceding_element: string;
+      succeeding_element: string;
+      [key: string]: any;
+    };
+    text: string;
+  };
+};
+
+export type SelectedComponent = {
+  id: string
+  html_tag: string
+  selected_element: string
+  preceding_element: string
+  succeeding_element: string
+  text: string
+}
 
 const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
+  const [selectedComponents, setSelectedComponents] = useState<SelectedComponent[]>([])
   const [leftPanelSize, setLeftPanelSize] = useState(25);
+  const [selectedTarget, setSelectedTarget] = useState(campaign.targets[0]["Targets for FE coding challenge"][0])
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const handleResize = (sizes: number[]) => {
     setLeftPanelSize(sizes[0]);
   };
+  const { updateContentGroup, isLoading, isSuccess, error } = useUpdateContentGroup()
 
+  const buildComponentPayload = (components: SelectedComponent[]) => {
+    const componentEntries = components.reduce((acc, component) => {
+      acc[component.id] = {
+        meta: {
+          type: "text",
+          html_tag: component.html_tag,
+          time_added: Date.now(),
+          html_tag_index: null,
+          selected_element: component.selected_element,
+          preceding_element: component.preceding_element,
+          succeeding_element: component.succeeding_element,
+        },
+        text: component.text,
+      }
+      return acc
+    }, {})
+  
+    return {
+      id: content.contentGroup,
+      payload: {
+        components: componentEntries,
+      },
+    }
+  }
+
+  useEffect(() => {
+    const components = content.components as ComponentMap
+
+    if (components) {
+      const initialSelected: SelectedComponent[] = Object.entries(components).map(([id, component]) => ({
+        id,
+        html_tag: component.meta.html_tag,
+        selected_element: component.meta.selected_element,
+        preceding_element: component.meta.preceding_element,
+        succeeding_element: component.meta.succeeding_element,
+        text: component.text,
+      }));
+  
+      setSelectedComponents(initialSelected);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Clear previous timeout if state changes before timer ends
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    debounceRef.current = setTimeout(() => {
+      const payload = buildComponentPayload(selectedComponents);
+
+      const updateContent = async () => {
+        try {
+          const content = await updateContentGroup(payload)
+        } catch (error) {
+          console.error("Failed to update content group:", error)
+        }
+      }
+      
+      updateContent()
+
+    }, 1000)
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current)
+      }
+    };
+  }, [selectedComponents])
+
+  const addSelectedComponent = (newComponent: SelectedComponent): void => {
+    setSelectedComponents(prevComponents => [...prevComponents, newComponent])
+  }
+
+  const removeSelectedComponent = (id: string): void => {
+    setSelectedComponents(prevComponents => prevComponents.filter(component => component.id !== id))
+  }
+
+  const changeSelectedTarget = (target: string): void => {
+    setSelectedTarget(target)
+  }
+
+  // console.log("content", content)
+  // console.log("campaign", campaign)
   return (
     <div className="flex flex-col h-[calc(100vh-50px)] bg-white">
       <PanelGroup direction="horizontal" onLayout={handleResize}>
         <Panel defaultSize={25} minSize={20} maxSize={80}>
           <div className="z-10 w-full h-full mb-40 overflow-x-hidden overflow-y-scroll flex flex-col items-start">
             <PersonalizationFactoryControlSettings
+              selectedComponents={selectedComponents}
+              removeComponent={removeSelectedComponent}
+              targets={campaign.targets[0]["Targets for FE coding challenge"]}
+              selectedTarget={selectedTarget}
+              changeSelectedTarget={changeSelectedTarget}
               currentPaneWidth={leftPanelSize}
               fixedButtonsPaddingRight={calculateFixedButtonsPaddingRight(
                 leftPanelSize
@@ -26,7 +163,11 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
         <PanelResizeHandle className="w-[2px] bg-gray-200 hover:bg-primary transition-colors focus:bg-primary" />
         <Panel>
           <div className="w-full h-full relative overflow-y-scroll">
-            <FactoryContent />
+            <FactoryContent  
+              selectedComponents={selectedComponents}
+              addComponent={addSelectedComponent} 
+              removeComponent={removeSelectedComponent} 
+            />
           </div>
         </Panel>
       </PanelGroup>

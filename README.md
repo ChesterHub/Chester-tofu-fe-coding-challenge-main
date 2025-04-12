@@ -7,15 +7,16 @@ I went through Git basic workflow, so you can see the project progress as it goe
 
 ## What went well while building this project?
 
-* The project was very unique, and I learned a lot about how Tofu’s product by working within the code. 
+* The project was very unique, and I learned a lot about Tofu’s product by working within the code. 
 * I’m proud that I was able to learn the code and most of how data is being passed and persisted just by debugging and testing.
 * I haven’t worked with iframes, especially within React, in a while and it was a good experience to figure things out in a short timeframe.
 * Just the feeling that I was able to complete the take home, despite not knowing much about the codebase before!
 
 ## What didn't go well and you would like to improve?
-* I could definitely organize some of the code to be easier for other engineers to digest. For example, types in their own files, maybe lifting functions higher up, can consider useReducer to handle state. 
 * I added my own SetTimeout Debounce, only to later realize the app Lodash installed.
+* Originally I set up logic for onElementClick to directly update the css of that element within the iframe. I realized later that was not necessary, I could just update all styling when there is a change of state in selected components. If I spent more time designing with task 3 requirements, even during task1, I would have come to this solution faster.
 * Im not 100% but I think that removeListener is not needed on useEffect return function for the iframe, because when component unmounts the iframe should be gone.
+* * I could organize some of the code to be easier for other engineers to digest and maintain in the future. For example, types in their own files, maybe lifting functions higher up, can consider useReducer to handle state. 
 
 ## Was there anything you learnt while working through this project?
 * Learned alot about the product of Tofu by going through this take home. Its a very cool feature!

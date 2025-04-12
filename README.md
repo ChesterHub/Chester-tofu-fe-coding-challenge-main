@@ -20,7 +20,7 @@
 ## Is there anything that you would do to make the user experience of this application better?
 
 * For User experience, definitely can add some skeleton loaders vs just a spinner.
-* The feature where the components are added on the list in <Settings>, maybe can have a button that will take you to the actual element on the landing page.
+* The feature where the components are added on the list in the Settings Component, maybe can have a button that will take you to the actual element on the landing page.
 
 ## Do you have any feedback about the API endpoints you were using or suggestions on how these could be better?
 

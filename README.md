@@ -14,9 +14,9 @@
 * Im not 100% but I think that removeListener is not needed on useEffect return function for the iframe, because when component unmounts the iframe should be gone.
 
 ## Was there anything you learnt while working through this project?
-
+* Learned alot about the product of Tofu by going through this take home. Its a very cool feature!
 * For event listeners, they snapshot the values within the function, we can useRef to fix that.
-* Manipulating the iframe within a React Component.
+* In general, manipulating the iframe within a React Component.
 
 ## Is there anything that you would do to make the user experience of this application better?
 

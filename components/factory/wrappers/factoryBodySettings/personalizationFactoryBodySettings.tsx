@@ -12,11 +12,11 @@ type ComponentMap = {
       selected_element: string
       preceding_element: string
       succeeding_element: string
-      variations?: {text: string}[]
+      variations?: { text: string }[]
     };
     text: string;
-  };
-};
+  }
+}
 
 export type SelectedComponent = {
   id: string
@@ -67,7 +67,7 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
     const components = content.components as ComponentMap
     const variations = content.results
 
-    if (variations && variations[0]) {
+    if (variations && variations[0]) { // if we have generated content
       setSelectedComponents(convertVariationsMapToSelectedComponents(variations[0].variations))
     } else if (components) {
       const initialSelected: SelectedComponent[] = Object.entries(components).map(([id, component]) => ({
@@ -79,13 +79,11 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
         text: component.text,
       }))
 
-  
       setSelectedComponents(initialSelected);
     }
   }, [])
 
   useEffect(() => {
-    // Clear previous timeout if state changes before timer ends
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
@@ -143,8 +141,6 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
     setSelectedTarget(target)
   }
 
-  // console.log("content", content)
-  // console.log("campaign", campaign)
   return (
     <div className="flex flex-col h-[calc(100vh-50px)] bg-white">
       <PanelGroup direction="horizontal" onLayout={handleResize}>

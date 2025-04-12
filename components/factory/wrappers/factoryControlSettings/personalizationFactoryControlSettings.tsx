@@ -64,7 +64,7 @@ export const PersonalizationFactoryControlSettings = ({
               className="fixed bottom-0 z-10"
             >
             <Button 
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-lime-500 py-1.5 px-3 text-sm/6 font-semibold text-black shadow-inner shadow-white/10 focus:outline-none w-full data-[hover]:bg-lime-400 data-[open]:bg-lime-500 data-[focus]:outline-1 data-[focus]:outline-black"
+              className="inline-flex items-center justify-center gap-2 rounded-md mb-4 bg-lime-500 py-1.5 px-3 text-sm/6 font-semibold text-black shadow-inner shadow-white/10 focus:outline-none w-full data-[hover]:bg-lime-400 data-[open]:bg-lime-500 data-[focus]:outline-1 data-[focus]:outline-black"
               disabled={!selectedTarget || !selectedComponents.length || isUpdateContentLoading || isContentLoading}
               onClick={handleSendClick}
             >

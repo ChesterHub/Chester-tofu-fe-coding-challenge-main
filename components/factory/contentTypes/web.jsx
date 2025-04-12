@@ -36,11 +36,15 @@ const Web = ({ selectedComponents, addComponent, removeComponent }) => {
       } else {
         const tagName = clickedElement.tagName
         const textContent = clickedElement.innerText
+        const prev = clickedElement.previousElementSibling
+        const next = clickedElement.nextElementSibling
         
         const newComponent = {
           id: tofuId,
           html_tag: tagName,
           selected_element: clickedElement.outerHTML,
+          preceding_element: prev ? prev.outerHTML : "",
+          succeeding_element: next ? next.outerHTML: "",
           text: textContent,
         }
         addComponent(newComponent)
@@ -60,12 +64,11 @@ const Web = ({ selectedComponents, addComponent, removeComponent }) => {
       
       if (iframeDoc.current) {
         const style = iframeDoc.current.createElement("style")
-        style.innerHTML = `
-        .tofu-element:hover {
-          border: 2px dashed orange;
-          content: "";
-          }
-          `;
+        style.innerHTML = `.tofu-element:hover {
+                            outline: 2px dashed orange;
+                            outline-offset: 0px;
+                            transition: outline 0.2s ease-in-out;
+                          }`
           iframeDoc.current.head.appendChild(style);
           // Add click event listener for tofu elements
           iframeDoc.current.addEventListener("click", handleElementClick)
@@ -78,7 +81,7 @@ const Web = ({ selectedComponents, addComponent, removeComponent }) => {
       initDisplayContent()
       return () => {
         if (iframeDoc.current) iframeDoc.current.removeEventListener("click", handleElementClick)
-        }
+      }
     }, [])
 
     const updateSelectedElementStyles = () => {
@@ -86,13 +89,21 @@ const Web = ({ selectedComponents, addComponent, removeComponent }) => {
     
       // Remove borders from all .tofu-element elements
       const allElements = iframeDoc.current.querySelectorAll('.tofu-element')
-      allElements.forEach((el) => {
-        el.style.border = ''
+      allElements.forEach((element) => {
+        element.style.border = ''
+        element.style.outline = "";
+        element.style.outlineOffset = "";
       })
       // Add borders only to those in selectedComponents
       selectedComponentsRef.current.forEach((component) => {
         const curr = iframeDoc.current.querySelector(`[data-tofu-id="${component.id}"]`)
-        if (curr) curr.style.border = "2px solid orange"
+        if (curr) {
+          if (component.variation_text) {
+            curr.textContent = component.variation_text;
+          }
+          curr.style.outline = "2px solid orange"
+          curr.style.outlineOffset = "0px"
+        }
       })
     }
 

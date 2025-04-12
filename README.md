@@ -1,5 +1,8 @@
 # Tofu Frontend Coding challenge
 
+Thank you for considering me for this role!
+-- Chester
+
 ## What went well while building this project?
 
 * The project was very unique, and I learned a lot about how Tofu’s product by working within the code. 

@@ -14,9 +14,9 @@ I went through Git basic workflow, so you can see the project progress as it goe
 
 ## What didn't go well and you would like to improve?
 * I added my own SetTimeout Debounce, only to later realize the app Lodash installed.
-* Originally I set up logic for onElementClick to directly update the css of that element within the iframe. I realized later that was not necessary, I could just update all styling when there is a change of state in selected components. If I spent more time designing with task 3 requirements, even during task1, I would have come to this solution faster.
+* I could organize some of the code to be easier for other engineers to digest and maintain in the future. For example, types in their own files, maybe lifting functions higher up, can consider useReducer to handle state. 
 * Im not 100% but I think that removeListener is not needed on useEffect return function for the iframe, because when component unmounts the iframe should be gone.
-* * I could organize some of the code to be easier for other engineers to digest and maintain in the future. For example, types in their own files, maybe lifting functions higher up, can consider useReducer to handle state. 
+* Lots of possibilities to improve performance, such as adding useCallbacks and React Memo. 
 
 ## Was there anything you learnt while working through this project?
 * Learned alot about the product of Tofu by going through this take home. Its a very cool feature!

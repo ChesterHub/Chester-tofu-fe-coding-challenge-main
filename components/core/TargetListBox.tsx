@@ -1,7 +1,5 @@
 import React, { useState } from 'react'
-import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
-import { CheckIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
-import clsx from 'clsx'
+
 type TargetListBoxProps = {
     selectedTarget: string
     allTargets: string[]

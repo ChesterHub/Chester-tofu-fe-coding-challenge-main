@@ -40,7 +40,7 @@ const Settings = ({
   const componentContent = selectedComponents.length 
   ? selectedComponents.map(component => {
     return <div key={component.id} className="flex items-center justify-between text-sm font-normal text-slate-700 border p-3 rounded-lg shadow-md mb-1">
-    <p className="flex-1">{component.text}</p>
+    <p className="flex-1">{component.variation_text ? component.variation_text : component.text}</p>
     <button
       onClick={() => removeComponent(component.id)}
     >

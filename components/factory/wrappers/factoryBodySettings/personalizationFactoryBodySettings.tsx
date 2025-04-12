@@ -5,35 +5,14 @@ import { PersonalizationFactoryControlSettings } from "../factoryControlSettings
 import { calculateFixedButtonsPaddingRight } from "utils/factoryHelpers";
 import { useUpdateContentGroup } from "hooks/api/contentGroup";
 
-const test1 = {
-  components: {
-    "7JJPz8_F9wo1sgZd" : {
-      meta: {
-        type: 'text',
-        "html_tag": "<div>",
-        "time_added": 1730664936853,
-        "html_tag_index": null,
-        selected_element:
-          '<div class="subtext tofu-element tofu-editable-element" data-tofu-id="7JJPz8_F9wo1sgZd">Scale your content efforts, personalize your GTM campaigns,and increase conversion</div>',
-        preceding_element: '<a>See a Demo</a>',
-        succeeding_element:
-          '<div>Scale your content efforts, personalize your GTM campaigns, and increase conversion</div>',
-      },
-      text: 'Scale your content efforts, personalize your GTM campaigns, and increase conversion',
-    }
-  },
-}
-
-const test2 = {components: {}}
-
 type ComponentMap = {
   [id: string]: {
     meta: {
-      html_tag: string;
-      selected_element: string;
-      preceding_element: string;
-      succeeding_element: string;
-      [key: string]: any;
+      html_tag: string
+      selected_element: string
+      preceding_element: string
+      succeeding_element: string
+      variations?: {text: string}[]
     };
     text: string;
   };
@@ -46,6 +25,7 @@ export type SelectedComponent = {
   preceding_element: string
   succeeding_element: string
   text: string
+  variation_text?: string
 }
 
 const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
@@ -85,8 +65,11 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
 
   useEffect(() => {
     const components = content.components as ComponentMap
+    const variations = content.results
 
-    if (components) {
+    if (variations && variations[0]) {
+      setSelectedComponents(convertVariationsMapToSelectedComponents(variations[0].variations))
+    } else if (components) {
       const initialSelected: SelectedComponent[] = Object.entries(components).map(([id, component]) => ({
         id,
         html_tag: component.meta.html_tag,
@@ -94,11 +77,12 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
         preceding_element: component.meta.preceding_element,
         succeeding_element: component.meta.succeeding_element,
         text: component.text,
-      }));
+      }))
+
   
       setSelectedComponents(initialSelected);
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
     // Clear previous timeout if state changes before timer ends
@@ -128,6 +112,25 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
     };
   }, [selectedComponents])
 
+  const convertVariationsMapToSelectedComponents = (variationsMap: ComponentMap): SelectedComponent[] => {
+    return Object.entries(variationsMap).map(([id, component]) => {
+      const variation_text = component.meta.variations?.[0]?.text
+      return {
+        id,
+        html_tag: component.meta.html_tag,
+        selected_element: component.meta.selected_element,
+        preceding_element: component.meta.preceding_element,
+        succeeding_element: component.meta.succeeding_element,
+        text: component.text,
+        variation_text,
+      }
+    })
+  }
+
+   const generateContentCallback = (variationsMap: ComponentMap): void => {
+    setSelectedComponents(convertVariationsMapToSelectedComponents(variationsMap))
+   }
+
   const addSelectedComponent = (newComponent: SelectedComponent): void => {
     setSelectedComponents(prevComponents => [...prevComponents, newComponent])
   }
@@ -148,11 +151,13 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
         <Panel defaultSize={25} minSize={20} maxSize={80}>
           <div className="z-10 w-full h-full mb-40 overflow-x-hidden overflow-y-scroll flex flex-col items-start">
             <PersonalizationFactoryControlSettings
+              content={content}
               selectedComponents={selectedComponents}
               removeComponent={removeSelectedComponent}
               targets={campaign.targets[0]["Targets for FE coding challenge"]}
               selectedTarget={selectedTarget}
               changeSelectedTarget={changeSelectedTarget}
+              generateContentCallback={generateContentCallback}
               currentPaneWidth={leftPanelSize}
               fixedButtonsPaddingRight={calculateFixedButtonsPaddingRight(
                 leftPanelSize

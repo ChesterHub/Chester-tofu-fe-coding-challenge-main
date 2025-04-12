@@ -27,7 +27,7 @@ const Web = ({ selectedComponents, addComponent, removeComponent }) => {
   const handleElementClick = (event) => {
     const clickedElement = event.target
     
-    // Check if the clicked element has the 'tofu-element' class
+    // Check if the clicked element has the '.tofu-element'
     if (clickedElement.classList.contains("tofu-element")) {
       const tofuId = clickedElement.getAttribute("data-tofu-id")
       //check if component already in list
@@ -87,7 +87,7 @@ const Web = ({ selectedComponents, addComponent, removeComponent }) => {
     const updateSelectedElementStyles = () => {
       if (!iframeDoc.current) return
     
-      // Remove borders from all .tofu-element elements
+      // Reset borders
       const allElements = iframeDoc.current.querySelectorAll('.tofu-element')
       allElements.forEach((element) => {
         element.style.border = ''
@@ -107,7 +107,7 @@ const Web = ({ selectedComponents, addComponent, removeComponent }) => {
       })
     }
 
-    useEffect(() => { // this useEffect for handling when selectedComponents update
+    useEffect(() => {
       selectedComponentsRef.current = selectedComponents // for handleClick data
       updateSelectedElementStyles()
     }, [selectedComponents])

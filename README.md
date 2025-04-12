@@ -8,9 +8,8 @@
 * Just the feeling that I was able to complete the take home, despite not knowing much about the codebase before!
 
 ## What didn't go well and you would like to improve?
-
+* I could definitely organize some of the code to be easier for other engineers to digest. For example, types in their own files, maybe lifting functions higher up, can consider useReducer to handle state. 
 * I added my own SetTimeout Debounce, only to later realize the app Lodash installed.
-* I feel like I could definitely organize some of the code to be easier for other engineers to consume. For example, types in their own files, maybe lifting functions higher up the components, can consider useReducer to handle state. 
 * Im not 100% but I think that removeListener is not needed on useEffect return function for the iframe, because when component unmounts the iframe should be gone.
 
 ## Was there anything you learnt while working through this project?

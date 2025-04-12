@@ -2,7 +2,7 @@
 
 Thank you for considering me for this role!
 
-I went through git basical workflow, so you can see the project progress as it goes with my commits.
+I went through Git basic workflow, so you can see the project progress as it goes with my commits.
 -- Chester
 
 ## What went well while building this project?

@@ -2,75 +2,29 @@ import { useEffect, useState, useRef } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import FactoryContent from "../factoryContent";
 import { PersonalizationFactoryControlSettings } from "../factoryControlSettings/personalizationFactoryControlSettings";
-import { calculateFixedButtonsPaddingRight } from "utils/factoryHelpers";
 import { useUpdateContentGroup } from "hooks/api/contentGroup";
-
-type ComponentMap = {
-  [id: string]: {
-    meta: {
-      html_tag: string
-      selected_element: string
-      preceding_element: string
-      succeeding_element: string
-      variations?: { text: string }[]
-    };
-    text: string;
-  }
-}
-
-export type SelectedComponent = {
-  id: string
-  html_tag: string
-  selected_element: string
-  preceding_element: string
-  succeeding_element: string
-  text: string
-  variation_text?: string
-}
+import { buildComponentPayload, calculateFixedButtonsPaddingRight, convertVariationsMapToSelectedComponents } from "utils/factoryHelpers";
+import { ComponentMap, SelectedComponent } from "utils/sharedTypes";
 
 const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
+  const campaignTargets = campaign.targets[0]["Targets for FE coding challenge"][0]
   const [selectedComponents, setSelectedComponents] = useState<SelectedComponent[]>([])
   const [leftPanelSize, setLeftPanelSize] = useState(25);
-  const [selectedTarget, setSelectedTarget] = useState(campaign.targets[0]["Targets for FE coding challenge"][0])
+  const [selectedTarget, setSelectedTarget] = useState(campaignTargets)
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const handleResize = (sizes: number[]) => {
     setLeftPanelSize(sizes[0]);
   };
-  const { updateContentGroup, isLoading, isSuccess, error } = useUpdateContentGroup()
-
-  const buildComponentPayload = (components: SelectedComponent[]) => {
-    const componentEntries = components.reduce((acc, component) => {
-      acc[component.id] = {
-        meta: {
-          type: "text",
-          html_tag: component.html_tag,
-          time_added: Date.now(),
-          html_tag_index: null,
-          selected_element: component.selected_element,
-          preceding_element: component.preceding_element,
-          succeeding_element: component.succeeding_element,
-        },
-        text: component.text,
-      }
-      return acc
-    }, {})
-  
-    return {
-      id: content.contentGroup,
-      payload: {
-        components: componentEntries,
-      },
-    }
-  }
+  const { updateContentGroup } = useUpdateContentGroup()
 
   useEffect(() => {
-    const components = content.components as ComponentMap
     const variations = content.results
+    const components: ComponentMap = content.components
 
-    if (variations && variations[0]) { // if we have generated content
+    if (variations?.[0]?.variations) { // if we have generated content
       setSelectedComponents(convertVariationsMapToSelectedComponents(variations[0].variations))
     } else if (components) {
-      const initialSelected: SelectedComponent[] = Object.entries(components).map(([id, component]) => ({
+      const initialSelectedComponents: SelectedComponent[] = Object.entries(components).map(([id, component]) => ({
         id,
         html_tag: component.meta.html_tag,
         selected_element: component.meta.selected_element,
@@ -79,7 +33,7 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
         text: component.text,
       }))
 
-      setSelectedComponents(initialSelected);
+      setSelectedComponents(initialSelectedComponents);
     }
   }, [])
 
@@ -89,19 +43,19 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
     }
 
     debounceRef.current = setTimeout(() => {
-      const payload = buildComponentPayload(selectedComponents);
+      const payload = buildComponentPayload(content.contentGroup, selectedComponents);
 
       const updateContent = async () => {
         try {
           const content = await updateContentGroup(payload)
-        } catch (error) {
-          console.error("Failed to update content group:", error)
+        } catch (err) {
+          console.error("Failed to update content group:", err)
         }
       }
-      
+
       updateContent()
 
-    }, 1000)
+    }, 800)
 
     return () => {
       if (debounceRef.current) {
@@ -109,21 +63,6 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
       }
     };
   }, [selectedComponents])
-
-  const convertVariationsMapToSelectedComponents = (variationsMap: ComponentMap): SelectedComponent[] => {
-    return Object.entries(variationsMap).map(([id, component]) => {
-      const variation_text = component.meta.variations?.[0]?.text
-      return {
-        id,
-        html_tag: component.meta.html_tag,
-        selected_element: component.meta.selected_element,
-        preceding_element: component.meta.preceding_element,
-        succeeding_element: component.meta.succeeding_element,
-        text: component.text,
-        variation_text,
-      }
-    })
-  }
 
    const generateContentCallback = (variationsMap: ComponentMap): void => {
     setSelectedComponents(convertVariationsMapToSelectedComponents(variationsMap))

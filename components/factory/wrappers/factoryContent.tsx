@@ -1,5 +1,5 @@
 import Web from "../contentTypes/web";
-import { SelectedComponent } from "./factoryBodySettings/personalizationFactoryBodySettings"
+import { SelectedComponent } from "utils/sharedTypes";
 
 
 type FactoryContentProps = {

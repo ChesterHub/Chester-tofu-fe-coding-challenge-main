@@ -43,3 +43,27 @@ export const ContentSourceFormat = {
 export type ContentSourceFormatKeys = keyof typeof ContentSourceFormat;
 export type ContentSourceFormatValues =
   (typeof ContentSourceFormat)[ContentSourceFormatKeys];
+
+  export type ComponentMap = {
+    [id: string]: {
+      meta: {
+        html_tag: string
+        selected_element: string
+        preceding_element: string
+        succeeding_element: string
+        variations?: { text: string }[]
+      };
+      text: string;
+    }
+  }
+
+  export type SelectedComponent = {
+    id: string
+    html_tag: string
+    selected_element: string
+    preceding_element: string
+    succeeding_element: string
+    text: string
+    variation_text?: string
+  }
+  

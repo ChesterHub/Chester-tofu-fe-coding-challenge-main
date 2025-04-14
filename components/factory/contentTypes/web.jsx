@@ -3,6 +3,12 @@ import Spinner from "@/components/core/spinner";
 
 const WEBSITE_IFRAME_HTML_ID = "website-iframe";
 
+const TOFU_ELEMENT_HOVER_CSS = `.tofu-element:hover {
+                                  outline: 2px dashed orange;
+                                  outline-offset: 0px;
+                                  transition: outline 0.2s ease-in-out;
+                                }`
+
 
 const Web = ({ selectedComponents, addComponent, removeComponent }) => {
   const iframeRef = useRef(null);
@@ -53,6 +59,30 @@ const Web = ({ selectedComponents, addComponent, removeComponent }) => {
     }
   }
   
+  const updateSelectedElementStyles = () => {
+    if (!iframeDoc.current) return
+  
+    // Reset borders
+    const allElements = iframeDoc.current.querySelectorAll('.tofu-element')
+    allElements.forEach((element) => {
+      element.style.border = ''
+      element.style.outline = "";
+      element.style.outlineOffset = "";
+    })
+    // Add borders only to those in selectedComponents
+    selectedComponentsRef.current.forEach((component) => {
+      const curr = iframeDoc.current.querySelector(`[data-tofu-id="${component.id}"]`)
+      if (curr) {
+        if (component.variation_text) {
+          curr.textContent = component.variation_text;
+        }
+        curr.style.outline = "2px solid orange"
+        curr.style.outlineOffset = "0px"
+      }
+    })
+  }
+
+  
   const initDisplayContent = async () => {
     setFetchingHtml(true);
     await fetchAndSetHtml("/landing-page.html");
@@ -64,14 +94,12 @@ const Web = ({ selectedComponents, addComponent, removeComponent }) => {
       
       if (iframeDoc.current) {
         const style = iframeDoc.current.createElement("style")
-        style.innerHTML = `.tofu-element:hover {
-                            outline: 2px dashed orange;
-                            outline-offset: 0px;
-                            transition: outline 0.2s ease-in-out;
-                          }`
-          iframeDoc.current.head.appendChild(style);
+        style.innerHTML = TOFU_ELEMENT_HOVER_CSS
+          iframeDoc.current.head.appendChild(style)
+
           // Add click event listener for tofu elements
           iframeDoc.current.addEventListener("click", handleElementClick)
+
           updateSelectedElementStyles()
         }
       }
@@ -79,33 +107,11 @@ const Web = ({ selectedComponents, addComponent, removeComponent }) => {
     
     useEffect(() => {
       initDisplayContent()
+
       return () => {
         if (iframeDoc.current) iframeDoc.current.removeEventListener("click", handleElementClick)
       }
     }, [])
-
-    const updateSelectedElementStyles = () => {
-      if (!iframeDoc.current) return
-    
-      // Reset borders
-      const allElements = iframeDoc.current.querySelectorAll('.tofu-element')
-      allElements.forEach((element) => {
-        element.style.border = ''
-        element.style.outline = "";
-        element.style.outlineOffset = "";
-      })
-      // Add borders only to those in selectedComponents
-      selectedComponentsRef.current.forEach((component) => {
-        const curr = iframeDoc.current.querySelector(`[data-tofu-id="${component.id}"]`)
-        if (curr) {
-          if (component.variation_text) {
-            curr.textContent = component.variation_text;
-          }
-          curr.style.outline = "2px solid orange"
-          curr.style.outlineOffset = "0px"
-        }
-      })
-    }
 
     useEffect(() => {
       selectedComponentsRef.current = selectedComponents // for handleClick data

@@ -37,7 +37,7 @@ const Settings = ({
     );
   };
 
-  const componentContent = selectedComponents.map((component) => {
+  const renderedComponents = selectedComponents.map((component) => {
     const displayText = component.variation_text || component.text
     return (
       <div
@@ -73,7 +73,7 @@ const Settings = ({
               On the canvas, select components that you want Tofu to
               personalize. We’ll generate multiple options for each component.
             </p>
-              {componentContent}
+              {renderedComponents}
             </div>
           </Accordion>
         </div>

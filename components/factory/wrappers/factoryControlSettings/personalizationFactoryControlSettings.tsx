@@ -18,35 +18,35 @@ export const PersonalizationFactoryControlSettings = ({
   const { generateContent, isLoading: isContentLoading } = useContentGeneration()
 
   const handleSendClick = async () => {
-  try {
-    const { contentId } = content
+    try {
+      const { contentId } = content
 
-    const updatePayload = {
-      content_params: {
-        targets: {
-          "Targets for FE coding challenge": selectedTarget,
+      const updatePayload = {
+        content_params: {
+          targets: {
+            "Targets for FE coding challenge": selectedTarget,
+          },
         },
-      },
+      }
+
+      const updatedData = await updateContent({ id: contentId, payload: updatePayload });
+      console.log("Content updated successfully:", updatedData);
+
+      const generatePayload = {
+        params: {
+          joint_generation: false,
+        },
+      }
+
+      const generatedData = await generateContent({ id: contentId, payload: generatePayload });
+      console.log("Content generated successfully:", generatedData)
+
+      if (generatedData) onContentGenerated(generatedData.variations)
+        
+    } catch (err) {
+      console.error("Failed during content update or generation:", err)
     }
-
-    const updatedData = await updateContent({ id: contentId, payload: updatePayload });
-    console.log("Content updated successfully:", updatedData);
-
-    const generatePayload = {
-      params: {
-        joint_generation: false,
-      },
-    }
-
-    const generatedData = await generateContent({ id: contentId, payload: generatePayload });
-    console.log("Content generated successfully:", generatedData)
-
-    if (generatedData) onContentGenerated(generatedData.variations)
-      
-  } catch (err) {
-    console.error("Failed during content update or generation:", err)
   }
-}
   
   return (
     <>

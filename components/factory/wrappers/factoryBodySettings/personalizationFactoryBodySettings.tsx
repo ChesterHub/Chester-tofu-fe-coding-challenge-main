@@ -37,9 +37,9 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
   
       const update = async () => {
         try {
-          await updateContentGroup(payload);
+          await updateContentGroup(payload)
         } catch (err) {
-          console.error("Failed to update content group:", err);
+          console.error("Failed to update content group:", err)
         }
       }
       update()
@@ -71,8 +71,7 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
   const onContentGenerated = (variationsMap: ComponentMap): void => { // CB
    setSelectedComponents(convertVariationsMapToSelectedComponents(variationsMap))
   }
-  // console.log("content", content)
-  // console.log("campaign", campaign)
+
   return (
     <div className="flex flex-col h-[calc(100vh-50px)] bg-white">
       <PanelGroup direction="horizontal" onLayout={handleResize}>

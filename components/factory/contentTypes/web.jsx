@@ -12,7 +12,6 @@ const TOFU_ELEMENT_HOVER_CSS = `
   }
 `;
 
-
 const Web = ({ selectedComponents, addComponent, removeComponent }) => {
   const iframeRef = useRef(null);
   const iframeDoc = useRef(null); // allows us to removeEventListener from iframe in useEffect
@@ -20,6 +19,18 @@ const Web = ({ selectedComponents, addComponent, removeComponent }) => {
   const [htmlContent, setHtmlContent] = useState(null);
   const [fetchingHtml, setFetchingHtml] = useState(false);
 
+  useEffect(() => {
+    initDisplayContent()
+
+    return () => {
+      if (iframeDoc.current) iframeDoc.current.removeEventListener("click", handleElementClick)
+    }
+  }, [])
+
+  useEffect(() => {
+    selectedComponentsRef.current = selectedComponents // for handleClick data
+    highlightSelectedComponents()
+  }, [selectedComponents])
   
   const fetchAndSetHtml = async (url) => {
     try {
@@ -33,21 +44,25 @@ const Web = ({ selectedComponents, addComponent, removeComponent }) => {
     }
   };
   
-  const handleElementClick = (event) => {
-    const target = event.target
-    if (!target.classList.contains("tofu-element")) return
-  
-    const tofuId = target.getAttribute("data-tofu-id")
-    if (!tofuId) return
+  const initDisplayContent = async () => {
+    setFetchingHtml(true);
+    await fetchAndSetHtml("/landing-page.html");
+    
+    const iframe = iframeRef.current
+    
+    iframe.onload = () => {
+      iframeDoc.current = iframe.contentDocument || iframe.contentWindow.document
+      
+      if (iframeDoc.current) {
+        const style = iframeDoc.current.createElement("style")
+        style.innerHTML = TOFU_ELEMENT_HOVER_CSS
+        iframeDoc.current.head.appendChild(style)
 
-    //check if component already in list
-    const isSelected = selectedComponentsRef.current.some(c => c.id === tofuId)
-  
-    if (isSelected) {
-      removeComponent(tofuId)
-    } else {
-      const newComponent = createComponentFromElement(target, tofuId)
-      addComponent(newComponent)
+        // Add click event listener for tofu elements
+        iframeDoc.current.addEventListener("click", handleElementClick)
+
+        highlightSelectedComponents()
+      }
     }
   }
   
@@ -78,40 +93,23 @@ const Web = ({ selectedComponents, addComponent, removeComponent }) => {
     });
   };
 
-  const initDisplayContent = async () => {
-    setFetchingHtml(true);
-    await fetchAndSetHtml("/landing-page.html");
-    
-    const iframe = iframeRef.current
-    
-    iframe.onload = () => {
-      iframeDoc.current = iframe.contentDocument || iframe.contentWindow.document
-      
-      if (iframeDoc.current) {
-        const style = iframeDoc.current.createElement("style")
-        style.innerHTML = TOFU_ELEMENT_HOVER_CSS
-        iframeDoc.current.head.appendChild(style)
+  const handleElementClick = (event) => {
+    const target = event.target
+    if (!target.classList.contains("tofu-element")) return
+  
+    const tofuId = target.getAttribute("data-tofu-id")
+    if (!tofuId) return
 
-        // Add click event listener for tofu elements
-        iframeDoc.current.addEventListener("click", handleElementClick)
-
-        highlightSelectedComponents()
-      }
+    //check if component already in list
+    const isSelected = selectedComponentsRef.current.some(c => c.id === tofuId)
+  
+    if (isSelected) {
+      removeComponent(tofuId)
+    } else {
+      const newComponent = createComponentFromElement(target, tofuId)
+      addComponent(newComponent)
     }
   }
-    
-  useEffect(() => {
-    initDisplayContent()
-
-    return () => {
-      if (iframeDoc.current) iframeDoc.current.removeEventListener("click", handleElementClick)
-    }
-  }, [])
-
-  useEffect(() => {
-    selectedComponentsRef.current = selectedComponents // for handleClick data
-    highlightSelectedComponents()
-  }, [selectedComponents])
 
   return (
     <>

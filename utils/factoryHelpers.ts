@@ -235,7 +235,7 @@ export const convertComponentMapToSelectedComponents = (components: ComponentMap
   }))
 }
 
-export const createComponentFromElement = (element, tofuId) => {
+export const createComponentFromElement = (element: HTMLElement, tofuId: string) => {
   const preceding = element.previousElementSibling
   const succeeding = element.nextElementSibling
 

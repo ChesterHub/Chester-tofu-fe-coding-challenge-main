@@ -12,9 +12,10 @@ I went through Git basic workflow, so you can see the project progress as it goe
 
 ## What didn't go well and you would like to improve?
 * I should have spent more time considering more whether to have a local component state with server state. It was a big design decision that changes the entire structure of the feature. Its possible the benefits of local component state was not worth the addition of more complex logic in the app.
+* I think a reducer would be very good for component state, because selectedComponents is an array of objects. I would implement this in the future.
 * I added my own SetTimeout Debounce, only to later realize the app Lodash installed.
 * I could improve the organization of code to be easier to digest and maintain in the future. For example, types in their own files, lifting functions higher up, helper functions to make components look more declarative.
-* Possibilities to improve performance and state management, such as adding useCallbacks, React Memo, and considering useReducer. 
+* Possibilities to improve performance, such as adding useCallbacks, React Memo, and checking React Profiler. 
 
 ## Was there anything you learnt while working through this project?
 * Learned alot about the product of Tofu by going through this take home. It was a very cool feature!
@@ -22,7 +23,6 @@ I went through Git basic workflow, so you can see the project progress as it goe
 * In general, manipulating the iframe within a React Component has alot of challenges.
 
 ## Is there anything that you would do to make the user experience of this application better?
-
 * For improved user experience, definitely can add some skeleton loaders.
 * For customers, when components are added on the list in the Settings Component, maybe there can be a button that will take you to the actual element on the landing page.
 

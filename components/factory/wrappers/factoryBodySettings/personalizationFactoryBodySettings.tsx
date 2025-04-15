@@ -7,22 +7,22 @@ import { buildContentGroupPayload, calculateFixedButtonsPaddingRight, convertCom
 import { ComponentMap, SelectedComponent } from "utils/sharedTypes";
 
 const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
-  const campaignTargets = campaign.targets[0]["Targets for FE coding challenge"][0]
+  const campaignTargets = campaign?.targets?.[0]?.["Targets for FE coding challenge"] || []
   const [selectedComponents, setSelectedComponents] = useState<SelectedComponent[]>([])
   const [leftPanelSize, setLeftPanelSize] = useState(25);
-  const [selectedTarget, setSelectedTarget] = useState(campaignTargets)
+  const [selectedTarget, setSelectedTarget] = useState(campaignTargets[0] || "")
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
   const handleResize = (sizes: number[]) => {
     setLeftPanelSize(sizes[0]);
   };
-  const { updateContentGroup } = useUpdateContentGroup()
+  const { updateContentGroup, error: updateContentError } = useUpdateContentGroup()
 
   useEffect(() => {
     const { results, components } = content
 
-    if (results?.[0]?.variations) { // if we have generated content
+    if (results?.[0]?.variations) {
       setSelectedComponents(convertVariationsMapToSelectedComponents(results[0].variations))
-    } else if (components) { // if we have already selected components
+    } else if (components) {
       setSelectedComponents(convertComponentMapToSelectedComponents(components))
     }
   }, [])
@@ -38,8 +38,8 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
       const update = async () => {
         try {
           await updateContentGroup(payload)
-        } catch (err) {
-          console.error("Failed to update content group:", err)
+        } catch {
+          if (updateContentError) console.error("Failed to update content group:", updateContentError)
         }
       }
       update()
@@ -53,7 +53,7 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current)
       }
-    };
+    }
   }, [selectedComponents])
   
   const addSelectedComponent = (newComponent: SelectedComponent): void => {
@@ -68,10 +68,10 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
     setSelectedTarget(target)
   }
   
-  const onContentGenerated = (variationsMap: ComponentMap): void => { // CB
+  const onContentGenerated = (variationsMap: ComponentMap): void => {
    setSelectedComponents(convertVariationsMapToSelectedComponents(variationsMap))
   }
-
+  
   return (
     <div className="flex flex-col h-[calc(100vh-50px)] bg-white">
       <PanelGroup direction="horizontal" onLayout={handleResize}>
@@ -81,7 +81,7 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
               content={content}
               selectedComponents={selectedComponents}
               removeComponent={removeSelectedComponent}
-              targets={campaign?.targets?.[0]?.["Targets for FE coding challenge"]}
+              targets={campaignTargets}
               selectedTarget={selectedTarget}
               changeSelectedTarget={changeSelectedTarget}
               onContentGenerated={onContentGenerated}

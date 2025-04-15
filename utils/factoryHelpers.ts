@@ -248,3 +248,26 @@ export const createComponentFromElement = (element: HTMLElement, tofuId: string)
     text: element.innerText,
   }
 }
+
+export const clearTofuElementStyles = (doc: Document) => {
+  const allTofuElements = doc.querySelectorAll(".tofu-element")
+  allTofuElements.forEach((el: HTMLElement) => {
+    el.style.outline = ""
+    el.style.outlineOffset = ""
+  })
+}
+
+export const applyTofuElementStyles = (
+  doc: Document,
+  component: SelectedComponent
+) => {
+  const el: HTMLElement | null = doc.querySelector(`[data-tofu-id="${component.id}"]`)
+  if (!el) return
+
+  el.style.outline = "2px solid orange"
+  el.style.outlineOffset = "0px"
+
+  if (component.variation_text) {
+    el.textContent = component.variation_text
+  }
+}

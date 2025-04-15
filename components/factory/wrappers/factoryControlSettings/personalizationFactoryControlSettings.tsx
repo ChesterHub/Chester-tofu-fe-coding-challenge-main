@@ -14,8 +14,8 @@ export const PersonalizationFactoryControlSettings = ({
   changeSelectedTarget,
   onContentGenerated
 }) => {
-  const { updateContent, isLoading: isUpdateContentLoading } = useUpdateContent()
-  const { generateContent, isLoading: isContentLoading } = useContentGeneration()
+  const { updateContent, isLoading: isUpdateContentLoading, error: updateError  } = useUpdateContent()
+  const { generateContent, isLoading: isGenerateContentLoading, error: generateError } = useContentGeneration()
 
   const handleSendClick = async () => {
     try {
@@ -43,8 +43,9 @@ export const PersonalizationFactoryControlSettings = ({
 
       if (generatedData) onContentGenerated(generatedData.variations)
         
-    } catch (err) {
-      console.error("Failed during content update or generation:", err)
+    } catch {
+      if (updateError) console.error("Failed during content update:", updateError)
+      if (generateError) console.error("Failed during content update or generation:", generateError)
     }
   }
   
@@ -67,13 +68,13 @@ export const PersonalizationFactoryControlSettings = ({
               }}
               className="fixed bottom-0 z-10"
             >
-            <Button 
-              className="inline-flex items-center justify-center gap-2 rounded-md mb-4 bg-lime-500 py-1.5 px-3 text-sm/6 font-semibold text-black shadow-inner shadow-white/10 focus:outline-none w-full data-[hover]:bg-lime-400 data-[open]:bg-lime-500 data-[focus]:outline-1 data-[focus]:outline-black"
-              disabled={!selectedTarget || !selectedComponents.length || isUpdateContentLoading || isContentLoading}
-              onClick={handleSendClick}
-            >
-              {(isContentLoading || isUpdateContentLoading) ? <Spinner /> : "Send"}
-            </Button>
+              <Button 
+                className="inline-flex items-center justify-center gap-2 rounded-md mb-4 bg-lime-500 py-1.5 px-3 text-sm/6 font-semibold text-black shadow-inner shadow-white/10 focus:outline-none w-full data-[hover]:bg-lime-400 data-[open]:bg-lime-500 data-[focus]:outline-1 data-[focus]:outline-black"
+                disabled={!selectedTarget || !selectedComponents.length || isUpdateContentLoading || isGenerateContentLoading}
+                onClick={handleSendClick}
+              >
+                {(isGenerateContentLoading || isUpdateContentLoading) ? <Spinner /> : "Send"}
+              </Button>
             </div>
           </div>
         </div>

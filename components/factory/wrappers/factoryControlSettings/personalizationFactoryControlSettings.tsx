@@ -12,38 +12,42 @@ export const PersonalizationFactoryControlSettings = ({
   targets,
   selectedTarget,
   changeSelectedTarget,
-  generateContentCallback
+  onContentGenerated
 }) => {
   const { updateContent, isLoading: isUpdateContentLoading } = useUpdateContent()
   const { generateContent, isLoading: isContentLoading } = useContentGeneration()
 
   const handleSendClick = async () => {
     try {
-      const updatedData = await updateContent({
-        id: content.contentId,
-        payload: {
-          content_params: {
-            targets: {
-              ["Targets for FE coding challenge"]: selectedTarget,
-            },
+      const { contentId } = content
+
+      const updatePayload = {
+        content_params: {
+          targets: {
+            "Targets for FE coding challenge": selectedTarget,
           },
         },
-      })
-      console.log("Content updated successfully!", updatedData)
-      const generatedData = await generateContent({
-        id: content.contentId,
-        payload: {
-          params: {
-            joint_generation: false,
-          },
+      }
+
+      const updatedData = await updateContent({ id: contentId, payload: updatePayload });
+      console.log("Content updated successfully:", updatedData);
+
+      const generatePayload = {
+        params: {
+          joint_generation: false,
         },
-      })
-      console.log("Generate Data updated successfully!", generatedData)
-      generateContentCallback(generatedData?.variations)
+      }
+
+      const generatedData = await generateContent({ id: contentId, payload: generatePayload });
+      console.log("Content generated successfully:", generatedData)
+
+      if (generatedData) onContentGenerated(generatedData.variations)
+        
     } catch (err) {
-      console.error("Failed to update content", err)
+      console.error("Failed during content update or generation:", err)
     }
   }
+  
   return (
     <>
       <div className="w-full h-full flex flex-col items-start">

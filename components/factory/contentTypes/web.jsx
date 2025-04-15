@@ -1,8 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
 import Spinner from "@/components/core/spinner";
+import { createComponentFromElement } from "utils/factoryHelpers";
+
 
 const WEBSITE_IFRAME_HTML_ID = "website-iframe";
-
+const TOFU_ELEMENT_HOVER_CSS = `
+  .tofu-element:hover {
+    outline: 2px dashed orange;
+    outline-offset: 0px;
+    transition: outline 0.2s ease-in-out;
+  }
+`;
 
 const Web = ({ selectedComponents, addComponent, removeComponent }) => {
   const iframeRef = useRef(null);
@@ -11,6 +19,18 @@ const Web = ({ selectedComponents, addComponent, removeComponent }) => {
   const [htmlContent, setHtmlContent] = useState(null);
   const [fetchingHtml, setFetchingHtml] = useState(false);
 
+  useEffect(() => {
+    initDisplayContent()
+
+    return () => {
+      if (iframeDoc.current) iframeDoc.current.removeEventListener("click", handleElementClick)
+    }
+  }, [])
+
+  useEffect(() => {
+    selectedComponentsRef.current = selectedComponents // for handleClick data
+    highlightSelectedComponents()
+  }, [selectedComponents])
   
   const fetchAndSetHtml = async (url) => {
     try {
@@ -24,35 +44,6 @@ const Web = ({ selectedComponents, addComponent, removeComponent }) => {
     }
   };
   
-  const handleElementClick = (event) => {
-    const clickedElement = event.target
-    
-    // Check if the clicked element has the '.tofu-element'
-    if (clickedElement.classList.contains("tofu-element")) {
-      const tofuId = clickedElement.getAttribute("data-tofu-id")
-      //check if component already in list
-      if (selectedComponentsRef.current.some(c => c.id === tofuId)) {
-        removeComponent(tofuId)
-      } else {
-        const tagName = clickedElement.tagName
-        const textContent = clickedElement.innerText
-        const prev = clickedElement.previousElementSibling
-        const next = clickedElement.nextElementSibling
-        
-        const newComponent = {
-          id: tofuId,
-          html_tag: tagName,
-          selected_element: clickedElement.outerHTML,
-          preceding_element: prev ? prev.outerHTML : "",
-          succeeding_element: next ? next.outerHTML: "",
-          text: textContent,
-        }
-        addComponent(newComponent)
-      }
-      
-    }
-  }
-  
   const initDisplayContent = async () => {
     setFetchingHtml(true);
     await fetchAndSetHtml("/landing-page.html");
@@ -64,53 +55,61 @@ const Web = ({ selectedComponents, addComponent, removeComponent }) => {
       
       if (iframeDoc.current) {
         const style = iframeDoc.current.createElement("style")
-        style.innerHTML = `.tofu-element:hover {
-                            outline: 2px dashed orange;
-                            outline-offset: 0px;
-                            transition: outline 0.2s ease-in-out;
-                          }`
-          iframeDoc.current.head.appendChild(style);
-          // Add click event listener for tofu elements
-          iframeDoc.current.addEventListener("click", handleElementClick)
-          updateSelectedElementStyles()
-        }
+        style.innerHTML = TOFU_ELEMENT_HOVER_CSS
+        iframeDoc.current.head.appendChild(style)
+
+        // Add click event listener for tofu elements
+        iframeDoc.current.addEventListener("click", handleElementClick)
+
+        highlightSelectedComponents()
       }
     }
-    
-    useEffect(() => {
-      initDisplayContent()
-      return () => {
-        if (iframeDoc.current) iframeDoc.current.removeEventListener("click", handleElementClick)
+  }
+  
+  const highlightSelectedComponents = () => {
+    if (!iframeDoc.current) return;
+  
+    const doc = iframeDoc.current;
+  
+    // Reset all tofu-element styles
+    const allTofuElements = doc.querySelectorAll(".tofu-element")
+    allTofuElements.forEach((el) => {
+      el.style.border = ""
+      el.style.outline = ""
+      el.style.outlineOffset = ""
+    })
+  
+    // Apply styles to selected components
+    selectedComponentsRef.current.forEach((component) => {
+      const el = doc.querySelector(`[data-tofu-id="${component.id}"]`)
+      if (!el) return
+  
+      if (component.variation_text) {
+        el.textContent = component.variation_text
       }
-    }, [])
+  
+      el.style.outline = "2px solid orange"
+      el.style.outlineOffset = "0px"
+    });
+  };
 
-    const updateSelectedElementStyles = () => {
-      if (!iframeDoc.current) return
-    
-      // Reset borders
-      const allElements = iframeDoc.current.querySelectorAll('.tofu-element')
-      allElements.forEach((element) => {
-        element.style.border = ''
-        element.style.outline = "";
-        element.style.outlineOffset = "";
-      })
-      // Add borders only to those in selectedComponents
-      selectedComponentsRef.current.forEach((component) => {
-        const curr = iframeDoc.current.querySelector(`[data-tofu-id="${component.id}"]`)
-        if (curr) {
-          if (component.variation_text) {
-            curr.textContent = component.variation_text;
-          }
-          curr.style.outline = "2px solid orange"
-          curr.style.outlineOffset = "0px"
-        }
-      })
+  const handleElementClick = (event) => {
+    const target = event.target
+    if (!target.classList.contains("tofu-element")) return
+  
+    const tofuId = target.getAttribute("data-tofu-id")
+    if (!tofuId) return
+
+    //check if component already in list
+    const isSelected = selectedComponentsRef.current.some(c => c.id === tofuId)
+  
+    if (isSelected) {
+      removeComponent(tofuId)
+    } else {
+      const newComponent = createComponentFromElement(target, tofuId)
+      addComponent(newComponent)
     }
-
-    useEffect(() => {
-      selectedComponentsRef.current = selectedComponents // for handleClick data
-      updateSelectedElementStyles()
-    }, [selectedComponents])
+  }
 
   return (
     <>

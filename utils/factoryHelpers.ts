@@ -1,3 +1,5 @@
+import { ComponentMap, SelectedComponent } from "./sharedTypes";
+
 export const tofuElementClass = "tofu-element";
 export const tofuHoveredElement = "tofu-hovered-element";
 export const selectDecorator = "tofu-selected-element";
@@ -180,3 +182,69 @@ export const calculateFixedButtonsPaddingRight = (panelWidth: number) => {
 
   return Math.round(interpolatedPadding);
 };
+
+export const buildContentGroupPayload = (contentGroupId: number, components: SelectedComponent[]) => {
+  const componentEntries = components.reduce((acc, component) => {
+    acc[component.id] = {
+      meta: {
+        type: "text",
+        html_tag: component.html_tag,
+        time_added: Date.now(),
+        html_tag_index: null,
+        selected_element: component.selected_element,
+        preceding_element: component.preceding_element,
+        succeeding_element: component.succeeding_element,
+      },
+      text: component.text,
+    }
+    return acc
+  }, {})
+
+  return {
+    id: contentGroupId,
+    payload: {
+      components: componentEntries,
+    },
+  }
+}
+
+export const convertVariationsMapToSelectedComponents = (variationsMap: ComponentMap): SelectedComponent[] => {
+  return Object.entries(variationsMap).map(([id, component]) => {
+    const variation_text = component.meta.variations?.[0]?.text
+    
+    return {
+      id,
+      html_tag: component.meta.html_tag,
+      selected_element: component.meta.selected_element,
+      preceding_element: component.meta.preceding_element,
+      succeeding_element: component.meta.succeeding_element,
+      text: component.text,
+      variation_text,
+    }
+  })
+}
+
+export const convertComponentMapToSelectedComponents = (components: ComponentMap): SelectedComponent[] => {
+  return Object.entries(components).map(([id, component]) => ({
+    id,
+    html_tag: component.meta.html_tag,
+    selected_element: component.meta.selected_element,
+    preceding_element: component.meta.preceding_element,
+    succeeding_element: component.meta.succeeding_element,
+    text: component.text,
+  }))
+}
+
+export const createComponentFromElement = (element: HTMLElement, tofuId: string) => {
+  const preceding = element.previousElementSibling
+  const succeeding = element.nextElementSibling
+
+  return {
+    id: tofuId,
+    html_tag: element.tagName,
+    selected_element: element.outerHTML,
+    preceding_element: preceding?.outerHTML || "",
+    succeeding_element: succeeding?.outerHTML || "",
+    text: element.innerText,
+  }
+}

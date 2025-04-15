@@ -183,7 +183,7 @@ export const calculateFixedButtonsPaddingRight = (panelWidth: number) => {
   return Math.round(interpolatedPadding);
 };
 
-export const buildComponentPayload = (contentGroupId: number, components: SelectedComponent[]) => {
+export const buildContentGroupPayload = (contentGroupId: number, components: SelectedComponent[]) => {
   const componentEntries = components.reduce((acc, component) => {
     acc[component.id] = {
       meta: {
@@ -222,4 +222,29 @@ export const convertVariationsMapToSelectedComponents = (variationsMap: Componen
       variation_text,
     }
   })
+}
+
+export const convertComponentMapToSelectedComponents = (components: ComponentMap): SelectedComponent[] => {
+  return Object.entries(components).map(([id, component]) => ({
+    id,
+    html_tag: component.meta.html_tag,
+    selected_element: component.meta.selected_element,
+    preceding_element: component.meta.preceding_element,
+    succeeding_element: component.meta.succeeding_element,
+    text: component.text,
+  }))
+}
+
+export const createComponentFromElement = (element, tofuId) => {
+  const preceding = element.previousElementSibling
+  const succeeding = element.nextElementSibling
+
+  return {
+    id: tofuId,
+    html_tag: element.tagName,
+    selected_element: element.outerHTML,
+    preceding_element: preceding?.outerHTML || "",
+    succeeding_element: succeeding?.outerHTML || "",
+    text: element.innerText,
+  }
 }

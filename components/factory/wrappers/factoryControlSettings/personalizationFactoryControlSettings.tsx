@@ -12,7 +12,7 @@ export const PersonalizationFactoryControlSettings = ({
   targets,
   selectedTarget,
   changeSelectedTarget,
-  generateContentCallback
+  onContentGenerated
 }) => {
   const { updateContent, isLoading: isUpdateContentLoading } = useUpdateContent()
   const { generateContent, isLoading: isContentLoading } = useContentGeneration()
@@ -32,16 +32,17 @@ export const PersonalizationFactoryControlSettings = ({
     const updatedData = await updateContent({ id: contentId, payload: updatePayload });
     console.log("Content updated successfully:", updatedData);
 
-    const generationPayload = {
+    const generatePayload = {
       params: {
         joint_generation: false,
       },
     }
 
-    const generatedData = await generateContent({ id: contentId, payload: generationPayload });
+    const generatedData = await generateContent({ id: contentId, payload: generatePayload });
     console.log("Content generated successfully:", generatedData)
 
-    generateContentCallback(generatedData?.variations)
+    if (generatedData) onContentGenerated(generatedData.variations)
+      
   } catch (err) {
     console.error("Failed during content update or generation:", err)
   }

@@ -3,7 +3,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import FactoryContent from "../factoryContent";
 import { PersonalizationFactoryControlSettings } from "../factoryControlSettings/personalizationFactoryControlSettings";
 import { useUpdateContentGroup } from "hooks/api/contentGroup";
-import { buildComponentPayload, calculateFixedButtonsPaddingRight, convertVariationsMapToSelectedComponents } from "utils/factoryHelpers";
+import { buildContentGroupPayload, calculateFixedButtonsPaddingRight, convertComponentMapToSelectedComponents, convertVariationsMapToSelectedComponents } from "utils/factoryHelpers";
 import { ComponentMap, SelectedComponent } from "utils/sharedTypes";
 
 const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
@@ -11,75 +11,68 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
   const [selectedComponents, setSelectedComponents] = useState<SelectedComponent[]>([])
   const [leftPanelSize, setLeftPanelSize] = useState(25);
   const [selectedTarget, setSelectedTarget] = useState(campaignTargets)
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
   const handleResize = (sizes: number[]) => {
     setLeftPanelSize(sizes[0]);
   };
   const { updateContentGroup } = useUpdateContentGroup()
 
   useEffect(() => {
-    const variations = content.results
-    const components: ComponentMap = content.components
+    const { results, components } = content
 
-    if (variations?.[0]?.variations) { // if we have generated content
-      setSelectedComponents(convertVariationsMapToSelectedComponents(variations[0].variations))
-    } else if (components) {
-      const initialSelectedComponents: SelectedComponent[] = Object.entries(components).map(([id, component]) => ({
-        id,
-        html_tag: component.meta.html_tag,
-        selected_element: component.meta.selected_element,
-        preceding_element: component.meta.preceding_element,
-        succeeding_element: component.meta.succeeding_element,
-        text: component.text,
-      }))
-
-      setSelectedComponents(initialSelectedComponents);
+    if (results?.[0]?.variations) { // if we have generated content
+      setSelectedComponents(convertVariationsMapToSelectedComponents(results[0].variations))
+    } else if (components) { // if we have already selected components
+      setSelectedComponents(convertComponentMapToSelectedComponents(components))
     }
   }, [])
 
-  useEffect(() => {
+  const debouncedContentUpdate = () => {
     if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
+      clearTimeout(debounceRef.current)
     }
 
     debounceRef.current = setTimeout(() => {
-      const payload = buildComponentPayload(content.contentGroup, selectedComponents);
-
-      const updateContent = async () => {
+      const payload = buildContentGroupPayload(content.contentGroup, selectedComponents)
+  
+      const update = async () => {
         try {
-          const content = await updateContentGroup(payload)
+          await updateContentGroup(payload);
         } catch (err) {
-          console.error("Failed to update content group:", err)
+          console.error("Failed to update content group:", err);
         }
       }
-
-      updateContent()
-
+      update()
     }, 800)
+  }
 
+  useEffect(() => {
+    debouncedContentUpdate()
+  
     return () => {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current)
       }
     };
   }, [selectedComponents])
-
-   const generateContentCallback = (variationsMap: ComponentMap): void => {
-    setSelectedComponents(convertVariationsMapToSelectedComponents(variationsMap))
-   }
-
+  
   const addSelectedComponent = (newComponent: SelectedComponent): void => {
     setSelectedComponents(prevComponents => [...prevComponents, newComponent])
   }
-
+  
   const removeSelectedComponent = (id: string): void => {
     setSelectedComponents(prevComponents => prevComponents.filter(component => component.id !== id))
   }
-
+  
   const changeSelectedTarget = (target: string): void => {
     setSelectedTarget(target)
   }
-
+  
+  const onContentGenerated = (variationsMap: ComponentMap): void => { // CB
+   setSelectedComponents(convertVariationsMapToSelectedComponents(variationsMap))
+  }
+  // console.log("content", content)
+  // console.log("campaign", campaign)
   return (
     <div className="flex flex-col h-[calc(100vh-50px)] bg-white">
       <PanelGroup direction="horizontal" onLayout={handleResize}>
@@ -89,10 +82,10 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
               content={content}
               selectedComponents={selectedComponents}
               removeComponent={removeSelectedComponent}
-              targets={campaign.targets[0]["Targets for FE coding challenge"]}
+              targets={campaign?.targets?.[0]?.["Targets for FE coding challenge"]}
               selectedTarget={selectedTarget}
               changeSelectedTarget={changeSelectedTarget}
-              generateContentCallback={generateContentCallback}
+              onContentGenerated={onContentGenerated}
               currentPaneWidth={leftPanelSize}
               fixedButtonsPaddingRight={calculateFixedButtonsPaddingRight(
                 leftPanelSize

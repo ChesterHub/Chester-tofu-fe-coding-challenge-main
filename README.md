@@ -11,9 +11,9 @@ I went through Git basic workflow, so you can see the project progress as it goe
 * I haven’t worked with iframes in a while in React and it was a good experience to figure things out in a short timeframe.
 
 ## What didn't go well and you would like to improve?
-* Maybe I should have just used the content.components as the source of truth for all of the selected component data, instead of adding the state to handle the selections first. This would make the app alot simpler.
+* I should have spent more time considering more whether to have a local component state with server state. It was a big design decision that changes the entire structure of the feature. Its possible the benefits of local component state was not worth the addition of more complex logic in the app.
 * I added my own SetTimeout Debounce, only to later realize the app Lodash installed.
-* I could improve the organization of code to be easier to digest and maintain in the future. For example, types in their own files, lifting functions higher up, updating files from jsx to tsx.
+* I could improve the organization of code to be easier to digest and maintain in the future. For example, types in their own files, lifting functions higher up, helper functions to make components look more declarative.
 * Possibilities to improve performance and state management, such as adding useCallbacks, React Memo, and considering useReducer. 
 
 ## Was there anything you learnt while working through this project?

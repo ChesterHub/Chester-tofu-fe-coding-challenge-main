@@ -14,8 +14,8 @@ export const PersonalizationFactoryControlSettings = ({
   changeSelectedTarget,
   onContentGenerated
 }) => {
-  const { updateContent, isLoading: isUpdateContentLoading, error: updateError  } = useUpdateContent()
-  const { generateContent, isLoading: isGenerateContentLoading, error: generateError } = useContentGeneration()
+  const { updateContent, isLoading: isUpdateContentLoading  } = useUpdateContent()
+  const { generateContent, isLoading: isGenerateContentLoading } = useContentGeneration()
 
   const handleSendClick = async () => {
     try {
@@ -43,9 +43,8 @@ export const PersonalizationFactoryControlSettings = ({
 
       if (generatedData) onContentGenerated(generatedData.variations)
         
-    } catch {
-      if (updateError) console.error("Failed during content update:", updateError)
-      if (generateError) console.error("Failed during content update or generation:", generateError)
+    } catch (err) {
+      console.error("Failed during content update or generation of content:", err)
     }
   }
   

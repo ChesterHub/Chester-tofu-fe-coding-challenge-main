@@ -15,7 +15,7 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
   const handleResize = (sizes: number[]) => {
     setLeftPanelSize(sizes[0]);
   };
-  const { updateContentGroup, error: updateContentError } = useUpdateContentGroup()
+  const { updateContentGroup } = useUpdateContentGroup()
 
   useEffect(() => {
     const { results, components } = content
@@ -38,8 +38,8 @@ const PersonalizationFactoryBodySettings = ({ content, campaign }) => {
       const update = async () => {
         try {
           await updateContentGroup(payload)
-        } catch {
-          if (updateContentError) console.error("Failed to update content group:", updateContentError)
+        } catch (err) {
+          console.error("Failed to update content group:", err)
         }
       }
       update()

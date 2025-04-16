@@ -7,6 +7,7 @@ I went through Git basic workflow, so you can see the project progress as it goe
 
 ## What went well while building this project?
 * The project was very unique, and I learned a lot about Tofu’s product by working within it.
+* Learned about Tanstack Query, and how it caches and invalidates stale data. Very modern way to handle fetching.
 * I was happy to learn the code and most of how data was being passed and persisted just by debugging and testing.
 * I haven’t worked with iframes in a while in React and it was a good experience to figure things out in a short timeframe.
 
